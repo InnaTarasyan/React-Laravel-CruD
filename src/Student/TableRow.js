@@ -10,7 +10,7 @@ class TableRow extends Component {
     }
     handleSubmit(event) {
         event.preventDefault();
-        let uri = MyGlobleSetting.url + `/api/students/${this.props.object.id}`;
+        let uri = MyGlobleSetting.url + `students/${this.props.object.id}`;
         axios.delete(uri);
     }
     render() {
