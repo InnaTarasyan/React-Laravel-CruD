@@ -18,6 +18,7 @@ class Main extends Component{
                        major: '',
                        faculty: '',
                        country: ''};
+        this.state.getData = this.getData.bind(this);
     }
 
     getData(){
@@ -36,7 +37,7 @@ class Main extends Component{
     }
 
     tabRow() {
-        var getData = this.getData;
+        var getData = this.state.getData;
         var openModal = this.openModal;
         var setAppState = this.setAppState;
 
