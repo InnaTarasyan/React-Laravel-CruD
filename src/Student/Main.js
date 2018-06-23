@@ -8,14 +8,23 @@ require('../bootstrap');
 class Main extends Component{
     constructor(props) {
         super(props);
-        this.state = {value: '', students: '', modalActive: false, name: '', email: '', major: '', faculty: '', country: ''};
-
+        this.state = { value: '',
+                       students: '',
+                       modalActive: false,
+                       update: '',
+                       id:'',
+                       name: '',
+                       email: '',
+                       major: '',
+                       faculty: '',
+                       country: ''};
     }
 
     getData(){
         axios.get(MyGlobleSetting.url + 'students')
             .then(response => {
                 this.setState({ students: response.data });
+                this.forceUpdate();
             })
             .catch(function (error) {
                 console.log(error);
@@ -27,21 +36,54 @@ class Main extends Component{
     }
 
     tabRow() {
+        var getData = this.getData;
+        var openModal = this.openModal;
+        var setAppState = this.setAppState;
+
         if (this.state.students instanceof Array) {
             return this.state.students.map(function (object, i) {
                  return (
-                    <TableRow object = {object} i = {i} key= {i}/>)
+                    <TableRow object = {object} i = {i} key= {i} getData = {getData}  openModal = {openModal} setAppState ={setAppState}/>)
             })
         }
     }
 
 
+    setAppState = (data) => {
+        this.setState({
+                id: data.id,
+                name: data.name,
+                email: data.email,
+                faculty: data.faculty,
+                major: data.major,
+                country: data.country,
+                update: true
+            }, function(){
+            console.log(this.state);
+        });
+    };
+
     openModal = () => {
-        this.setState({ modalActive: true })
+        if(!this.state.update){
+            this.setState({
+                id: '',
+                name: '',
+                email: '',
+                faculty: '',
+                major: '',
+                country: '',
+            })
+        }
+        this.setState({
+            modalActive: true,
+        })
     };
 
     closeModal = () => {
-        this.setState({ modalActive: false })
+        this.setState({
+            modalActive: false,
+            update: false
+        })
     };
 
     handleNameChange = (e) => {
@@ -77,6 +119,7 @@ class Main extends Component{
     handleSubmit = (e) => {
         e.preventDefault();
         const student = {
+            id: this.state.id,
             name: this.state.name,
             email: this.state.email,
             major: this.state.major,
@@ -84,13 +127,23 @@ class Main extends Component{
             country: this.state.country
         };
 
-        let uri = MyGlobleSetting.url + 'students';
-        axios.post(uri, student).then((response) => {
-            alert('success');
-            this.closeModal();
-            this.getData();
-            this.forceUpdate();
-        });
+        if(!this.state.update){
+            let uri = MyGlobleSetting.url + 'students';
+            axios.post(uri, student).then((response) => {
+                alert('success');
+                this.closeModal();
+                this.getData();
+            });
+        } else {
+            let uri = MyGlobleSetting.url + 'students/' + this.state.id;
+            console.log(uri);
+
+            axios.post(uri, student )
+                .then(() => {
+                    this.closeModal();
+                    this.getData();
+                })
+        }
     };
 
 
@@ -115,37 +168,37 @@ class Main extends Component{
                                         </div>
                                     </div>
                                     <div className="row">
-                                        <div className="col-md-12">
+                                        <div className="col-md-10">
                                             <div className="form-group">
-                                                <input type="text" className="form-control" placeholder="name" name="name"  onChange={this.handleNameChange}/>
+                                                <input type="text" className="form-control" placeholder="name" name="name"  onChange={this.handleNameChange} value={this.state.name}/>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="row">
-                                        <div className="col-md-12">
+                                        <div className="col-md-10">
                                             <div className="form-group">
-                                                <input type="text" className="form-control" placeholder="email" name="email" onChange={this.handleEmailChange}/>
+                                                <input type="text" className="form-control" placeholder="email" name="email" onChange={this.handleEmailChange} value={this.state.email}/>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="row">
-                                        <div className="col-md-12">
+                                        <div className="col-md-10">
                                             <div className="form-group">
-                                                <input type="text" className="form-control" placeholder="major" name="major" onChange={this.handleMajorChange}/>
+                                                <input type="text" className="form-control" placeholder="major" name="major" onChange={this.handleMajorChange} value={this.state.major}/>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="row">
-                                        <div className="col-md-12">
+                                        <div className="col-md-10">
                                             <div className="form-group">
-                                                <input type="text" className="form-control" placeholder="faculty" name="faculty" onChange={this.handleFacultyChange}/>
+                                                <input type="text" className="form-control" placeholder="faculty" name="faculty" onChange={this.handleFacultyChange} value={this.state.faculty}/>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="row">
-                                        <div className="col-md-12">
+                                        <div className="col-md-10">
                                             <div className="form-group">
-                                                <input type="text" className="form-control" placeholder="country" name="country" onChange={this.handleCountryChange}/>
+                                                <input type="text" className="form-control" placeholder="country" name="country" onChange={this.handleCountryChange}  value={this.state.country} />
                                             </div>
                                         </div>
                                     </div>
@@ -165,16 +218,16 @@ class Main extends Component{
                 <div className="table-responsive">
                     <table className="table table-hover">
                         <thead>
-                        <tr>
-                            <td>Name</td>
-                            <td>Email</td>
-                            <td>Major</td>
-                            <td>Faculty</td>
-                            <td>Country</td>
-                            <td width="200px">
-                                <button onClick={this.openModal}>Open modal</button>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td>Name</td>
+                                <td>Email</td>
+                                <td>Major</td>
+                                <td>Faculty</td>
+                                <td>Country</td>
+                                <td width="200px">
+                                    <button onClick={this.openModal}>Open modal</button>
+                                </td>
+                            </tr>
                         </thead>
                         <tbody>
                           {this.tabRow()}
